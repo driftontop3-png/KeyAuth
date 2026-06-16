@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Panel — KeyAuth</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <div class="logo">KeyAuth <span>Customer Panel</span></div>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/dashboard.html">Seller Dashboard</a>
+      </div>
+    </nav>
+
+    <div class="page-header" style="margin-top:40px;">
+      <h1>Customer Panel</h1>
+    </div>
+
+    <div class="card" style="max-width:480px;">
+      <p style="color:var(--muted); margin-bottom:16px;">
+        End-users can redeem license keys here. Enter your license key to activate.
+      </p>
+      <div class="form-group">
+        <label>License Key</label>
+        <input type="text" id="licenseKey" placeholder="XXXXX-XXXXX-XXXXX-XXXXX">
+      </div>
+      <button class="btn btn-primary" id="redeemBtn" onclick="redeemKey()">Redeem License</button>
+      <div id="result" style="margin-top:16px;"></div>
+    </div>
+  </div>
+
+  <script>
+    async function redeemKey() {
+      const key = document.getElementById('licenseKey').value.trim();
+      const app = JSON.parse(localStorage.getItem('keyauth_app') || '{}');
+      if (!app.ownerId) {
+        document.getElementById('result').innerHTML = '<p style="color:var(--danger)">No app configured. Visit the home page first to create an app.</p>';
+        return;
+      }
+      if (!key) return;
+
+      const btn = document.getElementById('redeemBtn');
+      btn.disabled = true;
+      btn.textContent = 'Redeeming...';
+
+      const base = window.location.origin;
+      const init = await fetch(`${base}/api/1.3/?type=init&name=${app.name}&ownerid=${app.ownerId}&ver=1.0`);
+      const initData = await init.json();
+      if (!initData.success) {
+        document.getElementById('result').innerHTML = `<p style="color:var(--danger)">${initData.message}</p>`;
+        btn.disabled = false;
+        btn.textContent = 'Redeem License';
+        return;
+      }
+
+      const lic = await fetch(`${base}/api/1.3/?type=license&sessionid=${initData.sessionid}&key=${encodeURIComponent(key)}`);
+      const licData = await lic.json();
+      btn.disabled = false;
+      btn.textContent = 'Redeem License';
+
+      if (licData.success) {
+        document.getElementById('result').innerHTML = `
+          <p style="color:var(--success)">License activated!</p>
+          <p>Username: <code>${licData.info.username}</code></p>
+          <p>Expires: ${licData.info.subscriptions[0]?.subscription || 'Lifetime'}</p>`;
+      } else {
+        document.getElementById('result').innerHTML = `<p style="color:var(--danger)">${licData.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>

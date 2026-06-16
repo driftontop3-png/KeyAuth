@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Application {
+  id           String   @id @default(cuid())
+  name         String
+  ownerId      String   @unique
+  secret       String
+  version      String   @default("1.0")
+  enabled      Boolean  @default(true)
+  hwidCheck    Boolean  @default(true)
+  vpnBlock     Boolean  @default(false)
+  hashCheck    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  users        User[]
+  licenses     License[]
+  sessions     Session[]
+  variables    Variable[]
+  blacklists   Blacklist[]
+  webhooks     Webhook[]
+  chatMessages ChatMessage[]
+}
+
+model User {
+  id            String      @id @default(cuid())
+  username      String
+  password      String
+  email         String?
+  hwid          String?
+  ip            String?
+  banned        Boolean     @default(false)
+  banReason     String?
+  subscription  DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  variables     UserVariable[]
+  sessions      Session[]
+
+  @@unique([username, applicationId])
+}
+
+model License {
+  id            String      @id @default(cuid())
+  key           String      @unique
+  note          String?
+  hwid          String?
+  used          Boolean     @default(false)
+  banned        Boolean     @default(false)
+  banReason     String?
+  duration      Int         @default(30)
+  durationUnit  String      @default("days")
+  expiresAt     DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  usedBy        String?
+}
+
+model Session {
+  id            String      @id @default(cuid())
+  sessionId     String      @unique
+  validated     Boolean     @default(false)
+  ip            String?
+  expiresAt     DateTime
+  createdAt     DateTime    @default(now())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  userId        String?
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model Variable {
+  id            String      @id @default(cuid())
+  varId         String
+  value         String
+  authed        Boolean     @default(false)
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([varId, applicationId])
+}
+
+model UserVariable {
+  id     String @id @default(cuid())
+  name   String
+  value  String
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([name, userId])
+}
+
+model Blacklist {
+  id            String      @id @default(cuid())
+  type          String
+  value         String
+  reason        String?
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([type, value, applicationId])
+}
+
+model Webhook {
+  id            String      @id @default(cuid())
+  url           String
+  events        String      @default("all")
+  enabled       Boolean     @default(true)
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}
+
+model ChatMessage {
+  id            String      @id @default(cuid())
+  author        String
+  message       String
+  channel       String      @default("main")
+  createdAt     DateTime    @default(now())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Documentation — KeyAuth</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <div class="logo">KeyAuth <span>Docs</span></div>
+      <div class="nav-links">
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/">Home</a>
+      </div>
+    </nav>
+
+    <div class="page-header" style="margin-top:40px;">
+      <h1>API Documentation</h1>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <h2 style="margin-bottom:12px;">KeyAuth 1.3 Client API</h2>
+      <p style="color:var(--muted); margin-bottom:16px;">
+        Base URL: <code id="baseUrl"></code>/api/1.3/
+      </p>
+      <p>Compatible with standard KeyAuth client libraries. Change the URL from <code>https://keyauth.win/api/1.3/</code> to your Vercel URL.</p>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <h3 style="margin-bottom:16px;">Client Endpoints</h3>
+      <table>
+        <thead><tr><th>Type</th><th>Description</th><th>Required Params</th></tr></thead>
+        <tbody>
+          <tr><td><code>init</code></td><td>Initialize session</td><td>name, ownerid</td></tr>
+          <tr><td><code>register</code></td><td>Register with license key</td><td>sessionid, username, pass, key</td></tr>
+          <tr><td><code>login</code></td><td>Login with credentials</td><td>sessionid, username, pass</td></tr>
+          <tr><td><code>license</code></td><td>Login with license key only</td><td>sessionid, key</td></tr>
+          <tr><td><code>logout</code></td><td>End session</td><td>sessionid</td></tr>
+          <tr><td><code>check</code></td><td>Verify active session</td><td>sessionid</td></tr>
+          <tr><td><code>upgrade</code></td><td>Redeem license on account</td><td>sessionid, username, key</td></tr>
+          <tr><td><code>var</code></td><td>Get global variable</td><td>sessionid, varid</td></tr>
+          <tr><td><code>getvar</code></td><td>Get user variable</td><td>sessionid, var</td></tr>
+          <tr><td><code>setvar</code></td><td>Set user variable</td><td>sessionid, var, data</td></tr>
+          <tr><td><code>chatget</code></td><td>Get chat messages</td><td>sessionid</td></tr>
+          <tr><td><code>chatsend</code></td><td>Send chat message</td><td>sessionid, message</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <h3 style="margin-bottom:16px;">Seller API</h3>
+      <p style="margin-bottom:12px;">Base: <code>/api/seller?action=ACTION&ownerid=ID&secret=SECRET</code></p>
+      <table>
+        <thead><tr><th>Action</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>createlicense</code></td><td>Generate keys (amount, duration, durationUnit, note)</td></tr>
+          <tr><td><code>fetchlicenses</code></td><td>List all licenses</td></tr>
+          <tr><td><code>fetchusers</code></td><td>List all users</td></tr>
+          <tr><td><code>fetchstats</code></td><td>Get app statistics</td></tr>
+          <tr><td><code>banuser</code> / <code>unbanuser</code></td><td>Ban or unban a user</td></tr>
+          <tr><td><code>setvar</code> / <code>fetchvars</code></td><td>Manage global variables</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <h3 style="margin-bottom:16px;">Example: Initialize + License Login</h3>
+      <div class="code-block"><pre>GET /api/1.3/?type=init&name=MyApp&ownerid=YOUR_OWNER_ID&ver=1.0
+→ { "success": true, "sessionid": "abc123..." }
+
+GET /api/1.3/?type=license&sessionid=abc123&key=XXXXX-XXXXX-XXXXX-XXXXX&hwid=machine-id
+→ { "success": true, "info": { "username": "user_XXXXX", "subscriptions": [...] } }</pre></div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('baseUrl').textContent = window.location.origin;
+  </script>
+</body>
+</html>
